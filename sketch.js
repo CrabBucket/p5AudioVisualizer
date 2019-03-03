@@ -3,7 +3,9 @@ var file;
 var fileloaded=false;
 var analyzer;
 var fft;
-
+var wrapper;
+var roller;
+var amp =0.3;
 
 function setup(){
   createFileInput(handleFile);
@@ -17,12 +19,14 @@ function setup(){
 
   // Patch the input to an volume analyzer
   
+  	wrapper =600;
+  	roller  =200;
   
-  
-  
-	circleLines=true;
-	circleWave=true;
+	circleLines=false;
+	circleWave=false;
 	pulse=false;
+	colors=false;
+	reg=false;
 	
   	noLoop();
 }
@@ -30,6 +34,8 @@ var dampers=[];
 var sDampers=[];
 var amplitudeDamper=0;
 var rot=[];
+;
+var damp=0.2;
 for(var i = 0;i< 1024;i++){
 	dampers.push(0);
 	rot.push(0);
@@ -39,8 +45,9 @@ var multi=1;
 function draw(){
 	var spectrum = fft.analyze();
 
-	
+
   background(133);
+
 
   if(pulse){
   	fill(0,0,0);
@@ -48,22 +55,25 @@ function draw(){
   	translate(width/2,height/2);
   	
 
-  	radius=amplitudeDamper+=0.4*(map(analyzer.getLevel(), 0, 1, 100, 800)-amplitudeDamper);
+  	radius=amplitudeDamper+=damp*(map(analyzer.getLevel(), 0, 1, 100, 800)-amplitudeDamper);
   	ellipse(0,0,radius*multi,radius*multi);
   	pop();
 
   }
   
   //              Regular
-  //rectMode(CENTER);
+  if(reg){
   
-  // noStroke();
-  // fill(0,255,0); // spectrum is green
-  // for (var i = 0; i< spectrum.length-200; i+=30){
-  //   var x = map(i, 0, spectrum.length-200, 0, width);
-  //   var h = map(spectrum[i], 0, 255, height, 0);
-  //   rect(x, h, 15*width / spectrum.length, 10);
-  // }
+  
+  stroke(0,255,0);
+  noFill();
+  for (var i = 0; i< spectrum.length; i+=3){
+  	strokeWeight(.5);
+    var x = map(i, 0, spectrum.length, 0, width);
+    var h = map(spectrum[i], 0, 255, 0, height);
+    line(x,height,x,height-h);
+  }
+  }
   // rectMode(CENTER);
   
   // Regular with damping
@@ -92,7 +102,7 @@ function draw(){
     
   //   pop();
     
-  // }
+  // 
   // bars
 
 
@@ -101,15 +111,19 @@ function draw(){
   if(circleLines){
 	  strokeWeight(3);
 
-	  stroke(51);
-	  fill(0,255,0); 
+	  
+	  if(!colors){
+	  	stroke(51);
+	  }	
 	  beginShape();
-	  for (var i = 200; i< spectrum.length-550; i++){
+	  for (var i = roller; i < spectrum.length-wrapper; i++){
+	  	if(colors){
+	  		stroke(map(i,200,spectrum.length-wrapper,0,255),map(i,200,spectrum.length-wrapper,255,0),255);
+	  	}
 	  	push();
 	  	translate(width/2,height/2);
-	  	rotate(i*2*PI/(spectrum.length-750));
+	  	rotate(i*2*PI/(spectrum.length-(wrapper+roller)));
 	  	vertex(0,30);
-	    var x = map(i, 0, spectrum.length-0, 0, width);
 	    var h = sDampers[i]= 0.2*(map(spectrum[i], 0, 255, 0, height)-sDampers[i]);
 	    if(pulse){
 	    	line(0,multi*radius*0.523,0,multi*0.523*radius+(h*2))
@@ -157,8 +171,9 @@ function draw(){
 	  
 	}
    
-  
-
+  fill(255,255,255);
+  stroke(255,255,255);
+  strokeWeight(.1);
   text('click to play/pause', 4, 10);
 }
 
@@ -177,14 +192,53 @@ function b(){
 
 }
 function keyPressed() {
-  if(key =='a'){
+  if(key=='1'){
+  	reg=!reg;
+  }
+  if(key =='5'){
   	pulse=!pulse;
+  }
+  if(key =='2'){
+  	circleLines=!circleLines;
+  	
+  }
+  if(key =='3'){
+  	circleWave=!circleWave;
+  }
+  if(key=='p'){
+  	wrapper+=20;
+  }
+  if(key=='o'){
+  	wrapper-=20;
+  }
+  if(key=='l'){
+  	roller+=20;
+  }
+  if(key=='k'){
+  	roller-=20;
+  }
+  if(key=='m'){
+  	amp+=0.1;
+  	sound.amp(amp);
+  }
+  if(key=='n'){
+  	amp-=0.1;
+  	sound.amp(amp);
+  }
+  if(key =='4'){
+  	colors=!colors;
   }
   if(keyCode===UP_ARROW){
   	multi+=.05;
   }
   if(keyCode===DOWN_ARROW){
   	multi-=.05;
+  }
+  if(keyCode===RIGHT_ARROW){
+  	damp=damp+=.005;
+  }
+  if(keyCode===DOWN_ARROW){
+  	dampdamp-=.005;  
   }
   
 }
@@ -194,6 +248,6 @@ function handleFile(file){
 	analyzer = new p5.Amplitude();
 	analyzer.setInput(sound);
 	fft = new p5.FFT();
-	sound.amp(.3);
+	sound.amp(amp);
 	loop();
 }
