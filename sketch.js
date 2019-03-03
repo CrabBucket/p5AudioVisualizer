@@ -46,7 +46,7 @@ function draw(){
 	var spectrum = fft.analyze();
 
 
-  background(133);
+  background(0,0,0);
 
 
   if(pulse){
