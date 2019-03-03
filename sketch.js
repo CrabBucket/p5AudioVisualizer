@@ -1,18 +1,14 @@
 var dropzone;
 var file;
 var fileloaded=false;
-function preload(){
-  // if(file!=null){
-  // 	sound = loadSound(file);
-  // }
-  while(fileloaded){
-  	createFileInput(handleFile);
-  	
-  }
-  sound = loadSound(file);
-}
+var analyzer;
+var fft;
+
 
 function setup(){
+  createFileInput(handleFile);
+  
+  
   var cnv = createCanvas(500,500);
   cnv.mouseClicked(togglePlay);
   fft = new p5.FFT();
@@ -20,16 +16,15 @@ function setup(){
   analyzer = new p5.Amplitude();
 
   // Patch the input to an volume analyzer
-  analyzer.setInput(sound);
-  sound.amp(.3);
+  
+  
+  
   
 	circleLines=true;
 	circleWave=true;
 	pulse=false;
-	dropzone = select('#dropzone');
-  	dropzone.dragOver(highlight);
-  	dropzone.dragLeave(unhighlight);
-  	dropzone.drop(gotFile, unhighlight);
+	
+  	noLoop();
 }
 var dampers=[];
 var sDampers=[];
@@ -175,6 +170,12 @@ function togglePlay() {
     sound.loop();
   }
 }
+function a(){
+
+}
+function b(){
+
+}
 function keyPressed() {
   if(key =='a'){
   	pulse=!pulse;
@@ -189,16 +190,10 @@ function keyPressed() {
 }
 function handleFile(file){
 	this.file=file;
-	fileloaded=true;
-}
-function gotFile(file) {
-  sound = loadSound(file);
-}
-
-function highlight() {
-  dropzone.style('background-color','#ccc');
-}
-
-function unhighlight() {
-  dropzone.style('background-color','#fff');
+	sound=loadSound(file);
+	analyzer = new p5.Amplitude();
+	analyzer.setInput(sound);
+	fft = new p5.FFT();
+	sound.amp(.3);
+	loop();
 }
